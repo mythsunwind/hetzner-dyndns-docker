@@ -1,4 +1,4 @@
-FROM alpine:3.17
+FROM alpine:3.19.1
 RUN apk add --no-cache openssh-client ansible git py3-lxml
 
 COPY main.yml .

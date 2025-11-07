@@ -12,9 +12,9 @@
       set_fact:
         dns_record_id: "{{ item.id }}"
         dns_record_type: "{{ item.type }}"
-        dns_record_value: "{{ item.value }}"
+        dns_record_value: "{{ item.records[0].value }}"
       when: item.name == dyndns_name
-      loop: "{{ dns_records.json.records }}"
+      loop: "{{ dns_records.json.rrsets }}"
 
     - name: Assert that the Record is from Type A
       ansible.builtin.assert:
@@ -26,35 +26,30 @@
 #    - debug:
 #        var: dns_record_id
 
+    - name: DYNDNS Record exist, will delete old entry
+      ansible.builtin.uri:
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/A"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ api_key }}"
+        status_code: 201
+      when: (dns_record_id | length > 0 and dns_record_value != external_ip_address and external_ip_address | length > 0)
+
     - name: DYNDNS Record {{ dyndns_name }} does NOT exist, will create it with external IP as {{ external_ip_address }}
       ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/records"
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST
         headers:
-          Auth-API-Token: "{{ api_key }}"
+          Authorization: "Bearer {{ api_key }}"
         body_format: json
         body:
           name: "{{ dyndns_name }}"
           type: "A"
-          value: "{{ external_ip_address }}"
-          zone_id: "{{ zone_id.json.zones[0].id }}"
+          records:
+            - value: "{{ external_ip_address }}"
           ttl: 60
+        status_code: 201
       when: (dns_record_id | length == 0 and external_ip_address | length > 0)
-
-    - name: DYNDNS Record does exist, will update it with external IP as {{ external_ip_address }} if it had changed
-      ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/records/{{ dns_record_id }}"
-        method: PUT
-        headers:
-          Auth-API-Token: "{{ api_key }}"
-        body_format: json
-        body:
-          name: "{{ dyndns_name }}"
-          type: "A"
-          value: "{{ external_ip_address }}"
-          zone_id: "{{ zone_id.json.zones[0].id }}"
-          ttl: 60
-      when: (dns_record_id | length > 0 and dns_record_value != external_ip_address and external_ip_address | length > 0)
 
   rescue:
     - name: There was an error

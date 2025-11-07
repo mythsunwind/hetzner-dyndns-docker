@@ -1,11 +1,14 @@
 hetzner-dyndns-docker
 =====================
 
-⚠️ **This code does use the old [DNS API](https://dns.hetzner.com/api-docs) and does not work if you migrate your DNS entries to Hetzner Console**  ⚠️
-
 Dockerfile and Ansible playbooks to update DNS entry on Hetzner grapped from Fritzbox.
 
 The docker container executes the playbook every 5 minutes.
+
+⚠️ **This code does use the new Hetzner Cloud API** ⚠️
+
+It does not work anymore if you have not migrate your DNS entries to Hetzner Console. Keep in mind that
+you have to generate a new API token in Hetzner Console after migrating the DNS entries.
 
 Build
 -----

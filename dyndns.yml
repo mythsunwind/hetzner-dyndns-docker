@@ -25,18 +25,18 @@
 
     - name: Get Zone ID for {{ dns_zone }}
       ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/zones?name={{ dns_zone }}"
+        url: "https://api.hetzner.cloud/v1/zones?name={{ dns_zone }}"
         method: GET
         headers:
-          Auth-API-Token: "{{ api_key }}"
+          Authorization: "Bearer {{ api_key }}"
       register: zone_id
 
     - name: Get all DNS Records for Zone {{ dns_zone }}
       ansible.builtin.uri:
-        url: "https://dns.hetzner.com/api/v1/records?zone_id={{ zone_id.json.zones[0].id }}"
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: GET
         headers:
-          Auth-API-Token: "{{ api_key }}"
+          Authorization: "Bearer {{ api_key }}"
       register: dns_records
 
 #    - debug:

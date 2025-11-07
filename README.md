@@ -8,7 +8,8 @@ The docker container executes the playbook every 5 minutes.
 ⚠️ **This code does use the new Hetzner Cloud API** ⚠️
 
 It does not work anymore if you have not migrate your DNS entries to Hetzner Console. Keep in mind that
-you have to generate a new API token in Hetzner Console after migrating the DNS entries.
+you have to generate a new API token in Hetzner Console after
+[migrating the DNS entries](https://docs.hetzner.com/networking/dns/migration-to-hetzner-console/process/).
 
 Prepare
 -------

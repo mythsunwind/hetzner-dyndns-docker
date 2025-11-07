@@ -13,7 +13,7 @@ you have to generate a new API token in Hetzner Console after migrating the DNS 
 Build
 -----
 
-`docker build . -t hetzner-dyndns`
+`docker build . -t hetzner-dyndns --network host`
 
 Prepare
 -------

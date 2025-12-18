@@ -4,38 +4,46 @@
   block:
     - name: Initialize Variables
       set_fact:
-        dns_record_id: ""
-        dns_record_type: ""
-        dns_record_value: ""
+        dns_a_record_id: ""
+        dns_a_record_type: ""
+        dns_a_record_value: ""
+        dns_aaaa_record_id: ""
+        dns_aaaa_record_type: ""
+        dns_aaaa_record_value: ""
 
-    - name: Lookup if DYNDNS Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
+    - name: Lookup if DYNDNS A Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
       set_fact:
-        dns_record_id: "{{ item.id }}"
-        dns_record_type: "{{ item.type }}"
-        dns_record_value: "{{ item.records[0].value }}"
-      when: item.name == dyndns_name
+        dns_a_record_id: "{{ item.id }}"
+        dns_a_record_type: "{{ item.type }}"
+        dns_a_record_value: "{{ item.records[0].value }}"
+      when:
+        - item.name == dyndns_name
+        - item.type == "A"
       loop: "{{ dns_records.json.rrsets }}"
 
-    - name: Assert that the Record is from Type A
-      ansible.builtin.assert:
-        that: dns_record_type == "A"
-        fail_msg:  "The DNS Record {{ dyndns_name }} already exist with a Record Type of {{ dns_record_type }}. Needs to be Type A. Please delete the Record manually and run the Playbook again."
-        success_msg:  "DNS Record Type is Type A as expected. Proceeding."
-      when: dns_record_type | length > 0
+    - name: Lookup if DYNDNS AAAA Record {{ dyndns_name }} exists in Zone {{ dns_zone }}
+      set_fact:
+        dns_aaaa_record_id: "{{ item.id }}"
+        dns_aaaa_record_type: "{{ item.type }}"
+        dns_aaaa_record_value: "{{ item.records[0].value }}"
+      when:
+        - item.name == dyndns_name
+        - item.type == "AAAA"
+      loop: "{{ dns_records.json.rrsets }}"
 
 #    - debug:
-#        var: dns_record_id
+#        var: dns_a_record_id
 
-    - name: DYNDNS Record exist, will delete old entry
+    - name: DYNDNS A Record exist, will delete old entry
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/A"
         method: DELETE
         headers:
           Authorization: "Bearer {{ api_key }}"
         status_code: 201
-      when: (dns_record_id | length > 0 and dns_record_value != external_ip_address and external_ip_address | length > 0)
+      when: (dns_a_record_id | length > 0 and dns_a_record_value != external_ip_address and external_ip_address | length > 0)
 
-    - name: DYNDNS Record {{ dyndns_name }} does NOT exist, will create it with external IP as {{ external_ip_address }}
+    - name: DYNDNS A Record for {{ dyndns_name }} does NOT exist, will create it with external IPv4 as {{ external_ip_address }}
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST
@@ -49,7 +57,32 @@
             - value: "{{ external_ip_address }}"
           ttl: 60
         status_code: 201
-      when: (dns_record_id | length == 0 and external_ip_address | length > 0)
+      when: (dns_a_record_id | length == 0 and external_ip_address | length > 0)
+
+    - name: DYNDNS AAAA Record exist, will delete old entry
+      ansible.builtin.uri:
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/AAAA"
+        method: DELETE
+        headers:
+          Authorization: "Bearer {{ api_key }}"
+        status_code: 201
+      when: (dns_aaaa_record_id | length > 0 and dns_aaaa_record_value != external_ipv6_address and external_ipv6_address | length > 0)
+
+    - name: DYNDNS AAAA Record for {{ dyndns_name }} does NOT exist, will create it with external IPv6 as {{ external_ip_address }}
+      ansible.builtin.uri:
+        url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
+        method: POST
+        headers:
+          Authorization: "Bearer {{ api_key }}"
+        body_format: json
+        body:
+          name: "{{ dyndns_name }}"
+          type: "AAAA"
+          records:
+            - value: "{{ external_ipv6_address }}"
+          ttl: 60
+        status_code: 201
+      when: (dns_aaaa_record_id | length == 0 and external_ipv6_address | length > 0)
 
   rescue:
     - name: There was an error

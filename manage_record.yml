@@ -68,7 +68,7 @@
         status_code: 201
       when: (dns_aaaa_record_id | length > 0 and dns_aaaa_record_value != external_ipv6_address and external_ipv6_address | length > 0)
 
-    - name: DYNDNS AAAA Record for {{ dyndns_name }} does NOT exist, will create it with external IPv6 as {{ external_ip_address }}
+    - name: DYNDNS AAAA Record for {{ dyndns_name }} does NOT exist, will create it with external IPv6 as {{ external_ipv6_address }}
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST

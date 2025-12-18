@@ -73,7 +73,7 @@
 
   - name: Convert XML of IPv6 response to JSON
     xml:
-      xmlstring: "{{external_ip_xml.results[0].content}}"
+      xmlstring: "{{external_ipv6_xml.results[0].content}}"
       xpath: /s:Envelope/s:Body/u:X_AVM_DE_GetExternalIPv6AddressResponse/NewExternalIPv6Address
       content: text
       namespaces:

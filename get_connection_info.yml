@@ -29,7 +29,7 @@
 #      var: connection_information
       var: connection_information_xml.results[0].content
     
-  - name: Get current external IP Address
+  - name: Get current external IPv4 Address
     uri:
       url: "http://{{ item }}:49000/igdupnp/control/WANIPConn1"
       method: POST
@@ -45,7 +45,23 @@
     loop:
       - "{{ ip_list }}"
 
-  - name: Convert XML to JSON
+  - name: Get current external IPv6 Address
+    uri:
+      url: "http://{{ item }}:49000/igdupnp/control/WANIPConn1"
+      method: POST
+      body_format: json
+      body: "<?xml version='1.0' encoding='utf-8'?><s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/' s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'><s:Body><u:GetExternalIPv6Address xmlns:'u=urn:schemas-upnp-org:service:WANIPv6Connection:1'></u:GetExternalIPv6Address></s:Body></s:Envelope>"
+      headers:
+        Content-Type: 'text/xml; charset="utf-8"'
+        SoapAction: "urn:schemas-upnp-org:service:WANIPConnection:1#X_AVM_DE_GetExternalIPv6Address"
+      force_basic_auth: true
+      return_content: true
+      validate_certs: false
+    register: external_ipv6_xml
+    loop:
+      - "{{ ip_list }}"
+
+  - name: Convert XML of IPv4 response to JSON
     xml:
       xmlstring: "{{external_ip_xml.results[0].content}}"
       xpath: /s:Envelope/s:Body/u:GetExternalIPAddressResponse/NewExternalIPAddress
@@ -55,10 +71,25 @@
         u: "urn:schemas-upnp-org:service:WANIPConnection:1"
     register: external_ip
 
-  - name: Print external IP address
+  - name: Convert XML of IPv6 response to JSON
+    xml:
+      xmlstring: "{{external_ip_xml.results[0].content}}"
+      xpath: /s:Envelope/s:Body/u:X_AVM_DE_GetExternalIPv6AddressResponse/NewExternalIPv6Address
+      content: text
+      namespaces:
+        s: "http://schemas.xmlsoap.org/soap/envelope/"
+        u: "urn:schemas-upnp-org:service:WANIPConnection:1"
+    register: external_ipv6
+
+  - name: Print external IPv4 address
     debug:
       var: external_ip.matches[0].NewExternalIPAddress
+
+  - name: Print external IPv6 address
+    debug:
+      var: external_ipv6.matches[0].NewExternalIPv6Address
 
   - name: Setting external IP Address as Variable for later use
     set_fact:
       external_ip_address: "{{ external_ip.matches[0].NewExternalIPAddress }}"
+      external_ipv6_address: "{{ external_ipv6.matches[0].NewExternalIPv6Address }}"

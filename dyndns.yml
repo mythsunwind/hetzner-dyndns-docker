@@ -11,17 +11,24 @@
       - "dyndns"
     api_key: ""
     external_ip_address: ""
+    external_ipv6_address: ""
 
     # DO NOT SET!
     dns_record_id: "" # Do not set!
     dns_record_type: "" # Do not set!
 
   tasks:
-    - name: Assert that external IP Address is set
+    - name: Assert that external IPv4 Address is set
       ansible.builtin.assert:
         that: "{{ external_ip_address | length > 0 }}"
-        fail_msg: "It seems that you haven't provided an external IP Address."
-        success_msg: "IP Address provided. Proceeding."
+        fail_msg: "It seems that you haven't provided an external IPv4 Address."
+        success_msg: "IPv6 Address provided. Proceeding."
+
+    - name: Assert that external IPv6 Address is set
+      ansible.builtin.assert:
+        that: "{{ external_ipv6_address | length > 0 }}"
+        fail_msg: "It seems that you haven't provided an external IPv6 Address."
+        success_msg: "IPv6 Address provided. Proceeding."
 
     - name: Get Zone ID for {{ dns_zone }}
       ansible.builtin.uri:

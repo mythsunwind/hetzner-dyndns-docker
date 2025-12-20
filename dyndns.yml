@@ -3,6 +3,7 @@
 # Version 1.0.0
 
 - hosts: "localhost"
+  connection: local
   gather_facts: true
 
   vars:
@@ -23,7 +24,7 @@
       ansible.builtin.assert:
         that: "{{ external_ip_address | length > 0 }}"
         fail_msg: "It seems that you haven't provided an external IPv4 Address."
-        success_msg: "IPv6 Address provided. Proceeding."
+        success_msg: "IPv4 Address provided. Proceeding."
 
     - name: Assert that external IPv6 Address is set if no prefix was read
       when:

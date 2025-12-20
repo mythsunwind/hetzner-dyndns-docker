@@ -1,6 +1,7 @@
 ---
 
 - hosts: "localhost"
+  connection: local
   gather_facts: true
 
   vars:
@@ -121,12 +122,6 @@
     debug:
       var: external_ip.matches[0].NewExternalIPAddress
 
-  - name: Print external IPv6 address
-    when:
-      - ipv6_identifier == ""
-    debug:
-      var: external_ipv6.matches[0].NewExternalIPv6Address
-
   - name: Print IPv6 prefix address
     when:
       - ipv6_identifier != ""
@@ -163,4 +158,11 @@
       - ipv6_identifier != ""
     set_fact:
       ipv6_external_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
+
+  - name: Print external IPv6 address
+    when:
+      - ipv6_external_address == ""
+    debug:
+      var: ipv6_external_address
+
 

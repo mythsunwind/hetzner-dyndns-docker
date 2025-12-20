@@ -146,9 +146,9 @@
 
   - name: Remove colon at the end of IPv6 prefix
     when:
-      - ipv6_prefix != ""
+      - ipv6_prefix_address != ""
     set_fact:
-      ipv6_prefix_without_colon: "{{ ipv6_prefix | regex_replace(':$', '') }}"
+      ipv6_prefix_without_colon: "{{ ipv6_prefix_address | regex_replace(':$', '') }}"
 
   - name: Set external IPv6 address to prefix and identifier if
     when:
@@ -159,7 +159,7 @@
 
   - name: Print external IPv6 address
     when:
-      - external_ipv6_address == ""
+      - external_ipv6_address != ""
     debug:
       var: external_ipv6_address
 

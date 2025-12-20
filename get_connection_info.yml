@@ -152,17 +152,15 @@
       ipv6_prefix_address: "{{ ipv6_prefix.matches[0].NewIPv6Prefix }}"
 
   - name: Remove colon at the end of IPv6 prefix
-    set_fact:
     when:
       - ipv6_prefix != ""
-    ipv6_prefix_without_colon: "{{ ipv6_prefix | regex_replace(':$', '') }}"
+    set_fact:
+      ipv6_prefix_without_colon: "{{ ipv6_prefix | regex_replace(':$', '') }}"
 
   - name: Set external IPv6 address to prefix and identifier if
-    set_fact:
     when:
       - ipv6_prefix_without_colon != ""
       - ipv6_identifier != ""
-    ipv6_external_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
-
-
+    set_fact:
+      ipv6_external_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
 

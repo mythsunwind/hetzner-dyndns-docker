@@ -129,8 +129,6 @@
       var: ipv6_prefix.matches[0].NewIPv6Prefix
 
   - name: Save external IPv4 Address as Variable for later use
-    when:
-      - ipv6_identifier == ""
     set_fact:
       external_ip_address: "{{ external_ip.matches[0].NewExternalIPAddress }}"
 
@@ -157,12 +155,12 @@
       - ipv6_prefix_without_colon != ""
       - ipv6_identifier != ""
     set_fact:
-      ipv6_external_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
+      external_ipv6_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
 
   - name: Print external IPv6 address
     when:
-      - ipv6_external_address == ""
+      - external_ipv6_address == ""
     debug:
-      var: ipv6_external_address
+      var: external_ipv6_address
 
 

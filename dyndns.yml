@@ -22,15 +22,15 @@
   tasks:
     - name: Assert that external IPv4 Address is set
       ansible.builtin.assert:
-        that: "{{ external_ip_address | length > 0 }}"
+        that:
+          - external_ip_address != ""
         fail_msg: "It seems that you haven't provided an external IPv4 Address."
         success_msg: "IPv4 Address provided. Proceeding."
 
-    - name: Assert that external IPv6 Address is set if no prefix was read
-      when:
-        - ipv6_prefix == ""
+    - name: Assert that external IPv6 Address is set 
       ansible.builtin.assert:
-        that: "{{ external_ipv6_address | length > 0 }}"
+        that:
+          - external_ipv6_address != ""
         fail_msg: "It seems that you haven't provided an external IPv6 Address."
         success_msg: "IPv6 Address provided. Proceeding."
 

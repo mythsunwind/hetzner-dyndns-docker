@@ -6,6 +6,9 @@ COPY get_connection_info.yml .
 COPY manage_record.yml .
 COPY dyndns.yml .
 COPY entrypoint.sh /
+
+ENV IPV6_IDENTIFIER
+
 RUN chmod +x /entrypoint.sh
 
 CMD [ "/bin/sh", "-c", "/entrypoint.sh"]

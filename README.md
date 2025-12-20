@@ -1,7 +1,7 @@
 hetzner-dyndns-docker
 =====================
 
-Dockerfile and Ansible playbooks to update DNS entry on Hetzner grapped from Fritzbox.
+Dockerfile and Ansible playbooks to update IPv4 (A) and IPv6 (AAAA) DNS entries on Hetzner grapped from Fritzbox.
 
 The docker container executes the playbook every 5 minutes.
 
@@ -27,6 +27,15 @@ Run
 ---
 
     docker run -e "DNS_ZONE=<DOMAIN>" -e "API_KEY=<API-KEY>" ghcr.io/mythsunwind/hetzner-dyndns-docker
+
+Optional: Set IPv6 entry to different internal machine
+------------------------------------------------------
+
+In case you want to bind the DNS entry to a different machine that the Fritzbox itself (for example if your fileserver is a different machine than the Fritzbox itself inside your local network) you need to set the interface identifier of the local machine (last four groups of the fd80 IP):
+
+    docker run -e "DNS_ZONE=<DOMAIN>" -e "API_KEY=<API-KEY>" -e "IPV6_IDENTIFIER=1319:8a2e:0370:7347" ghcr.io/mythsunwind/hetzner-dyndns-docker
+
+The script will then get the IPv6 prefix (first four groups) instead of the full IP from the Fritzbox and concatenate them into the IP of the internal machine.
 
 Optional: Build image yourself
 -------------------------------

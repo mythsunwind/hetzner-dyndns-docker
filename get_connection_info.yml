@@ -6,6 +6,7 @@
   vars:
     ip_list:
       192.168.178.1
+    ipv6_identifier: ""
   tasks:
 
   - name: Get Current Connection Information
@@ -45,7 +46,9 @@
     loop:
       - "{{ ip_list }}"
 
-  - name: Get current external IPv6 Address
+  - name: If no Ipv6 identifier is set get current external IPv6 Address
+    when:
+      - ipv6_identifier == ""
     uri:
       url: "http://{{ item }}:49000/igdupnp/control/WANIPConn1"
       method: POST
@@ -61,6 +64,25 @@
     loop:
       - "{{ ip_list }}"
 
+  - name: If IPv6 identifier is set only get IPv6 prefix
+    when:
+      - ipv6_identifier != ""
+    uri:
+      url: "http://{{ item }}:49000/igdupnp/control/WANIPConn1"
+      method: POST
+      body_format: json
+      body: "<?xml version='1.0' encoding='utf-8'?><s:Envelope xmlns:s='http://schemas.xmlsoap.org/soap/envelope/' s:encodingStyle='http://schemas.xmlsoap.org/soap/encoding/'><s:Body><u:GetIPv6Prefix xmlns:'u=urn:schemas-upnp-org:service:WANIPv6Connection:1'></u:GetIPv6Prefix></s:Body></s:Envelope>"
+      headers:
+        Content-Type: 'text/xml; charset="utf-8"'
+        SoapAction: "urn:schemas-upnp-org:service:WANIPConnection:1#X_AVM_DE_GetIPv6Prefix"
+      force_basic_auth: true
+      return_content: true
+      validate_certs: false
+    register: ipv6_prefix_xml
+    loop:
+      - "{{ ip_list }}"
+
+
   - name: Convert XML of IPv4 response to JSON
     xml:
       xmlstring: "{{external_ip_xml.results[0].content}}"
@@ -71,7 +93,9 @@
         u: "urn:schemas-upnp-org:service:WANIPConnection:1"
     register: external_ip
 
-  - name: Convert XML of IPv6 response to JSON
+  - name: If no IPv6 identifier is set convert XML of IPv6 response to JSON
+    when:
+      - ipv6_identifier == ""
     xml:
       xmlstring: "{{external_ipv6_xml.results[0].content}}"
       xpath: /s:Envelope/s:Body/u:X_AVM_DE_GetExternalIPv6AddressResponse/NewExternalIPv6Address
@@ -81,15 +105,64 @@
         u: "urn:schemas-upnp-org:service:WANIPConnection:1"
     register: external_ipv6
 
+  - name: If IPv6 identifier is set convert XML of IPv6 prefix response to JSON
+    when:
+      - ipv6_identifier != ""
+    xml:
+      xmlstring: "{{ipv6_prefix_xml.results[0].content}}"
+      xpath: /s:Envelope/s:Body/u:X_AVM_DE_GetIPv6PrefixResponse/NewIPv6Prefix
+      content: text
+      namespaces:
+        s: "http://schemas.xmlsoap.org/soap/envelope/"
+        u: "urn:schemas-upnp-org:service:WANIPConnection:1"
+    register: ipv6_prefix
+
   - name: Print external IPv4 address
     debug:
       var: external_ip.matches[0].NewExternalIPAddress
 
   - name: Print external IPv6 address
+    when:
+      - ipv6_identifier == ""
     debug:
       var: external_ipv6.matches[0].NewExternalIPv6Address
 
-  - name: Setting external IP Address as Variable for later use
+  - name: Print IPv6 prefix address
+    when:
+      - ipv6_identifier != ""
+    debug:
+      var: ipv6_prefix.matches[0].NewIPv6Prefix
+
+  - name: Save external IPv4 Address as Variable for later use
+    when:
+      - ipv6_identifier == ""
     set_fact:
       external_ip_address: "{{ external_ip.matches[0].NewExternalIPAddress }}"
+
+  - name: If no IPv6 identifier is set save external IP Address as Variable for later use
+    when:
+      - ipv6_identifier == ""
+    set_fact:
       external_ipv6_address: "{{ external_ipv6.matches[0].NewExternalIPv6Address }}"
+
+  - name: If IPv6 identifier is set save IPv6 prefix as Variable for later use
+    when:
+      - ipv6_identifier != ""
+    set_fact:
+      ipv6_prefix_address: "{{ ipv6_prefix.matches[0].NewIPv6Prefix }}"
+
+  - name: Remove colon at the end of IPv6 prefix
+    set_fact:
+    when:
+      - ipv6_prefix != ""
+    ipv6_prefix_without_colon: "{{ ipv6_prefix | regex_replace(':$', '') }}"
+
+  - name: Set external IPv6 address to prefix and identifier if
+    set_fact:
+    when:
+      - ipv6_prefix_without_colon != ""
+      - ipv6_identifier != ""
+    ipv6_external_address: "{{ ipv6_prefix_without_colon ~ ipv6_identifier }}"
+
+
+

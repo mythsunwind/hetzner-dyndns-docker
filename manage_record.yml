@@ -35,15 +35,21 @@
 #        var: dns_a_record_id
 
     - name: DYNDNS A Record exist, will delete old entry
+      when:
+        - dns_a_record_id | length > 0
+        - dns_a_record_value != external_ip_address
+        - external_ip_address | length > 0
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/A"
         method: DELETE
         headers:
           Authorization: "Bearer {{ api_key }}"
         status_code: 201
-      when: (dns_a_record_id | length > 0 and dns_a_record_value != external_ip_address and external_ip_address | length > 0)
 
     - name: DYNDNS A Record for {{ dyndns_name }} does NOT exist, will create it with external IPv4 as {{ external_ip_address }}
+      when:
+        - dns_a_record_id | length == 0
+        - external_ip_address | length > 0
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST
@@ -57,18 +63,23 @@
             - value: "{{ external_ip_address }}"
           ttl: 60
         status_code: 201
-      when: (dns_a_record_id | length == 0 and external_ip_address | length > 0)
 
     - name: DYNDNS AAAA Record exist, will delete old entry
+      when:
+        - external_ipv6_address != ""
+        - dns_aaaa_record_id | length > 0
+        - dns_aaaa_record_value != external_ipv6_address
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets/{{ dyndns_name }}/AAAA"
         method: DELETE
         headers:
           Authorization: "Bearer {{ api_key }}"
         status_code: 201
-      when: (dns_aaaa_record_id | length > 0 and dns_aaaa_record_value != external_ipv6_address and external_ipv6_address | length > 0)
 
     - name: DYNDNS AAAA Record for {{ dyndns_name }} does NOT exist, will create it with external IPv6 as {{ external_ipv6_address }}
+      when:
+        - dns_aaaa_record_id | length == 0
+        - external_ipv6_address | length > 0
       ansible.builtin.uri:
         url: "https://api.hetzner.cloud/v1/zones/{{ zone_id.json.zones[0].id }}/rrsets"
         method: POST
@@ -82,7 +93,6 @@
             - value: "{{ external_ipv6_address }}"
           ttl: 60
         status_code: 201
-      when: (dns_aaaa_record_id | length == 0 and external_ipv6_address | length > 0)
 
   rescue:
     - name: There was an error

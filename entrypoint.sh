@@ -11,6 +11,6 @@ if [ -z "$API_KEY" ]; then
 fi
 
 while true; do
-       ansible-playbook main.yml -e "dns_zone=$DNS_ZONE api_key=$API_KEY" -e '{ "dyndns_names":["dyn"] }' -k -K
+       ansible-playbook main.yml -e "dns_zone=$DNS_ZONE api_key=$API_KEY ipv6_identifier=$IPV6_IDENTIFIER" -e '{ "dyndns_names":["dyn"] }' -k -K
        sleep 300
 done

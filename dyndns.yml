@@ -12,6 +12,7 @@
     api_key: ""
     external_ip_address: ""
     external_ipv6_address: ""
+    ipv6_prefix: ""
 
     # DO NOT SET!
     dns_record_id: "" # Do not set!
@@ -24,7 +25,9 @@
         fail_msg: "It seems that you haven't provided an external IPv4 Address."
         success_msg: "IPv6 Address provided. Proceeding."
 
-    - name: Assert that external IPv6 Address is set
+    - name: Assert that external IPv6 Address is set if no prefix was read
+      when:
+        - ipv6_prefix == ""
       ansible.builtin.assert:
         that: "{{ external_ipv6_address | length > 0 }}"
         fail_msg: "It seems that you haven't provided an external IPv6 Address."

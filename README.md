@@ -1,15 +1,15 @@
 hetzner-dyndns-docker
 =====================
 
-Dockerfile and Ansible playbooks to update IPv4 (A) and IPv6 (AAAA) DNS entries on Hetzner grapped from Fritzbox.
+You want to use your private internet connection with a static DNS domain without using a third party service like DynDNS? Your internet router is a Fritzbox? This repository contains a Dockerfile and Ansible playbooks to update IPv4 (A) and IPv6 (AAAA) DNS entries on Hetzner depending on the IP addresses from your Fritzbox.
 
-The docker container executes the playbook every 5 minutes.
+The docker container executes the playbook every 5 minutes. It updates the DNS entries only if the IP has changed.
 
 ⚠️ **This code does use the new Hetzner Cloud API** ⚠️
 
-It does not work anymore if you have not migrate your DNS entries to Hetzner Console. Keep in mind that
+*It does not work anymore if you have not migrate your DNS entries to Hetzner Console. Keep in mind that
 you have to generate a new API token in Hetzner Console after
-[migrating the DNS entries](https://docs.hetzner.com/networking/dns/migration-to-hetzner-console/process/).
+[migrating the DNS entries](https://docs.hetzner.com/networking/dns/migration-to-hetzner-console/process/).*
 
 Prepare
 -------
